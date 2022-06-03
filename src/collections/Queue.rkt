@@ -96,6 +96,16 @@
   (test-case "Test for empty queues"
     (define q (Queue:empty))
     (check-eq? #t (Queue:empty? q))
+
+
+    ; Create a queue, then drain it fully via recursion
+    (define s (Queue:init '(1 2 3 4 5)))
+    (define (loop-til-empty q)
+      (if (Queue:empty? q)
+          (loop-til-empty? (Queue:tail q))
+          q))
+    (define new-queue (loop-til-empty s))
+    (check-eq? 0 (Queue-count new-queue))
     )
 
   (displayln "Tests complete")
