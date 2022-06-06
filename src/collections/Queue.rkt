@@ -11,6 +11,7 @@
          Queue:snoc         ; a -> Q a -> Q a
          Queue:head         ; Q a -> Maybe a
          Queue:tail         ; Q a -> Maybe Q a
+         Queue:append       ; Q a -> Q a -> Q a
          )
 
 
@@ -29,6 +30,7 @@
   (if (eqv? '() F)
       (Queue (reverse R) '() c)
       (Queue F R c)))
+
 
 ;; Create an empty queue for initialization
 (define/contract (Queue:empty)
@@ -89,6 +91,37 @@
             (sub1 (Queue-count q))))))
 
 
+; Map a function over all items in the queue
+; A for-each is not provided as order is not maintained
+; in this representation of queue (since rear items are backwards)
+(define/contract (Queue:map q f)
+  (-> Queue? (any/c . -> . any/c) Queue?)
+  (Queue (map f (Queue-front q))
+         (map f (Queue-rear q))
+         (Queue-count q)))
+
+
+(define/contract (Queue->list q)
+  (-> Queue? list?)
+  (define (inner qcc lcc)
+    (if (Queue:empty? qcc)
+        lcc
+        (inner (Queue:tail qcc)
+               (cons (Queue:head qcc) lcc))))
+  (reverse (inner q '())))
+
+
+(define/contract (Queue:append q1 q2)
+  (-> Queue? Queue? Queue?)
+  (define (inner qcc qdrain)
+    (if (Queue:empty? qdrain)
+        qcc
+        (inner (Queue:snoc (Queue:head qdrain) qcc)
+               (Queue:tail qdrain))))
+  (inner q1 q2))
+
+
+;; Tests for the Queue module
 (module+ test
   (require rackunit)
 
@@ -96,17 +129,26 @@
   (test-case "Test for empty queues"
     (define q (Queue:empty))
     (check-eq? #t (Queue:empty? q))
+    (check-eq? #f (Queue:not-empty? q))
 
 
     ; Create a queue, then drain it fully via recursion
     (define s (Queue:init '(1 2 3 4 5)))
     (define (loop-til-empty q)
       (if (Queue:empty? q)
-          (loop-til-empty? (Queue:tail q))
-          q))
+          q
+          (loop-til-empty (Queue:tail q))))
     (define new-queue (loop-til-empty s))
     (check-eq? 0 (Queue-count new-queue))
     )
+
+
+  (test-case "Test for appending two queues"
+    (define q1 (Queue:init '(1 2 3 4 5)))
+    (define q2 (Queue:init '(6 7 8 9 10)))
+    (define q3 (Queue:append q1 q2))
+    (check-eqv? '(1 2 3 4 5 6 7 8 9 10)
+               (Queue->list q3)))
 
   (displayln "Tests complete")
   )

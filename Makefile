@@ -1,6 +1,20 @@
-build:
-	mkdir -p build
-	raco exe -o build/creo src/main.rkt
+CC = raco
+FLAGS = --cs --vv
+
+TARGET = creo
+
+ENTRY = src/main.rkt
+
+BUILDDIR = build
+
+all: $(TARGET)
+
+$(TARGET):
+	mkdir -p $(BUILDDIR)
+	$(CC) exe $(FLAGS) -o $(BUILDDIR)/$(TARGET) $(ENTRY) 
+
+test:
+	raco test -x .
 
 clean:
 	rm -rf build/creo
