@@ -43,7 +43,8 @@
                 #:depends-on 'root_dir)
      (Task:make 'styles (folder-maker project-name "styles")
                 #:depends-on 'root_dir)
-
+     (Task:make 'static (folder-maker project-name "static")
+                #:depends-on 'root_dir)
      ))
 
   (Taskrun 4 tasks)

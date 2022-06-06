@@ -22,7 +22,10 @@
 (define-syntax Hash:get
  (syntax-rules ()
   [(get-key-or H) (raise-syntax-error "Hash:get: no key provided!")]
-  [(get-key-or H K) (hash-ref H K)]
+  [(get-key-or H K)
+   (if (hash-has-key? H K)
+       (hash-ref H K)
+       (error (format "Hash:get: key '~a' does not exist" K)))]
   [(get-key-or H K E)
     (cond
      [(hash-has-key? H K) (hash-ref H K)]
@@ -68,7 +71,8 @@
  (define pname
   (let ([procpath (find-executable-path (symbol->string 'pname))])
    (if (eqv? #f procpath)
-       (error 'defproc "Executable not found, is it installed?")
+       (error 'defproc
+              (format "Executable `~a` not found, is it installed?" 'pname))
        (lambda args
         (begin
          (define-values (S I O E)
@@ -87,3 +91,5 @@
   (require rackunit)
 
   (check-eq? 0 0))
+
+; end Macros.rkt
