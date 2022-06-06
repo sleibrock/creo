@@ -3,6 +3,9 @@
 (require (for-syntax racket/base))
 
 
+(provide (all-defined-out))
+
+
 ;; Time some piece of code for testing purposes
 (define-syntax-rule (time-it expr)
   (begin
@@ -24,6 +27,23 @@
     (cond
      [(hash-has-key? H K) (hash-ref H K)]
      [else E])]))
+
+
+;; Provide a simpler use case for updating keys in a hash
+;; Simply checks if key exists then uses the proper method
+(define-syntax-rule (Hash:update H K V)
+  (if (hash-has-key? H K)
+      (hash-update H K (λ (_) V))
+      (hash-set H K V)))
+
+
+;; The other side of updating a hash
+;; If the hash has a key in place, use the new value Y
+;; If the value does not exist, use the new value N
+(define-syntax-rule (Hash:update-else H K Y N)
+  (if (hash-has-key? H K)
+      (hash-update H K (λ (_) Y))
+      (hash-set H K N)))
 
 
 ;; Easier substring than using `substring`

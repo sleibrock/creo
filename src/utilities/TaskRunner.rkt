@@ -4,6 +4,7 @@
 (require (only-in racket/list range empty?)
          "../collections/Queue.rkt"
          "../collections/Task.rkt"
+         "Macros.rkt"
          )
 
 (provide Taskrun)
@@ -75,7 +76,7 @@
              ((done)
                 (if (hash-has-key? H taskid)
                     (superloop (Queue:append Q (hash-ref H taskid))
-                               (hash-update H taskid (λ (_) (Queue:empty)))
+                               (Hash:update H taskid (Queue:empty))
                                (sub1 C))
                     (superloop Q H (sub1 C))))
              ((fail)
