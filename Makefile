@@ -1,5 +1,5 @@
 CC = raco
-FLAGS = --cs --vv
+FLAGS = --cs -v
 
 TARGET = creo
 

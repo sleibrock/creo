@@ -3,23 +3,25 @@
 
 (require (only-in racket/cmdline command-line)
          "parameters.rkt"
+
+         ; import the CREO entrypoint functions
          "functions/init.rkt"
+         "functions/build.rkt"
          )
+
 
 (command-line
  #:program "creo"
- #:help-labels "What does this do?"
  #:usage-help "Creo - where your dreams become reality"
- #:args (action . args)
+ #:args (target . args)
 
  (displayln "Welcome to Creo!")
- (displayln (format "action: ~a" action))
- (displayln (format "args: ~a" args))
 
-
- (case action
+ (case target
    (("init") (CREO:init args))
-   (else (error "No valid action given"))))
+   (("build") (CREO:build args))
+   (else (displayln "No valid action given"))))
 
 
+ 
 ; end main.rkt

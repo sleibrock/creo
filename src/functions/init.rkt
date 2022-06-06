@@ -1,7 +1,7 @@
 #lang racket/base
 
 
-(require (only-in racket/contract define/contract -> ->* any/c)
+(require (only-in racket/contract define/contract -> ->* any/c list/c or/c)
          "../collections/Task.rkt"
          "../utilities/TaskRunner.rkt"
          )
@@ -9,9 +9,9 @@
 (provide CREO:init)
 
 
-
+;; Provide a general wrapper for creating folders or erroring if they are made
 (define (folder-maker . paths)
-  (->* () #:rest list? (-> any/c void?))
+  (->* () #:rest (list/c (or/c path? string?)) (-> any/c void?))
   (λ ()
     (let ([p (apply build-path (cons (current-directory) paths))])
       (if (directory-exists? p)
@@ -22,7 +22,7 @@
 ;; Initialize the main Creo project directory with sub-directories
 ;; Populate a directory with 
 (define/contract (CREO:init args)
-  (-> any/c void?)
+  (-> list? void?)
 
   (displayln "Attempting to initialize the CREO project")
   
