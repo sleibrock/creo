@@ -86,9 +86,11 @@
               (error "ERROR: incorrect message type")))))
        (superloop task-queue dependents-hash 0))))
 
+  ; let the workers run free
   (for ([x indices])
     (vector-set! workers x (make-worker x supervisor)))
 
+  ; now wait for the supervisor to finish running all tasks
   (thread-wait supervisor)
   
   (displayln "Finished running tasks"))

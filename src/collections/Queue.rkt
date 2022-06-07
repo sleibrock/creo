@@ -125,24 +125,20 @@
 (module+ test
   (require rackunit)
 
-
+  ;; Create a queue, then drain it fully via recursion
   (test-case "Test for empty queues"
     (define q (Queue:empty))
     (check-eq? #t (Queue:empty? q))
     (check-eq? #f (Queue:not-empty? q))
-
-
-    ; Create a queue, then drain it fully via recursion
     (define s (Queue:init '(1 2 3 4 5)))
     (define (loop-til-empty q)
       (if (Queue:empty? q)
           q
           (loop-til-empty (Queue:tail q))))
     (define new-queue (loop-til-empty s))
-    (check-eq? 0 (Queue-count new-queue))
-    )
-
-
+    (check-eq? 0 (Queue-count new-queue)))
+  
+  ;; Test whether adding two queues is correct
   (test-case "Test for appending two queues"
     (define q1 (Queue:init '(1 2 3 4 5)))
     (define q2 (Queue:init '(6 7 8 9 10)))
@@ -150,7 +146,6 @@
     (check-eqv? '(1 2 3 4 5 6 7 8 9 10)
                (Queue->list q3)))
 
-  (displayln "Tests complete")
-  )
+  (displayln "Queue.rkt: Tests complete"))
 
 ; end Queue.rkt

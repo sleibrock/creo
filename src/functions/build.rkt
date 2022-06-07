@@ -19,19 +19,25 @@
        (format "CREO:build - no ~a folder not found; is the project initialized?"
                folder)))))
 
+(define (replace-content-with-public P)
+  (apply build-path
+         (cons (string->path "public")
+               (cdr (explode-path P)))))
 
-(define/contract (process-file output-dir file-path)
-  (-> path? path? void?)
-  (define extn (File:type file-path))
-  (unless (directory-exists? output-dir)
-      (make-parent-directory* output-dir))
-  (case extn
-    ((markdown) (displayln "Caught a markdown file"))
-    ((image) (begin
-               (displayln "Copying an image file")
-               (copy-file file-path (build-path output-dir file-path))))
-    (else (void))))
 
+(define (public-create-dir target)
+  (let ([new-path [replace-content-with-public target]])
+    (if (directory-exists? new-path)
+        (void)
+        (make-directory* new-path))))
+
+(define (public-process-file target)
+  (let ([new-path [replace-content-with-public target]])
+    (define type (File:type target))
+    (case type 
+      ((markdown) (displayln "Got a markdown file!"))
+      ((image)    (displayln "Got an image file!"))
+      (else (displayln "Got something else...")))))
 
 (define/contract (CREO:build args)
   (-> list? void?)
@@ -43,7 +49,8 @@
   ; define all tasks
   (define tasks
     (list
-     ;(Task:make 'check_config (λ () (unless (file-exists? "config.creo") (error "CREO:build - config.creo not found"))))
+     ;(Task:make 'check_config (λ () (unless (file-exists? "config.creo")
+     ;  (error "CREO:build - config.creo not found"))))
      (Task:make 'check_content   (folder-check "content"))
      (Task:make 'check_templates (folder-check "templates"))
      (Task:make 'check_static    (folder-check "static"))
@@ -56,25 +63,24 @@
      ; recursively scan the content folder for files to copy/process
      ; or directories to build to the public directory
      (Task:make
-      'build_dirs
+      'build_content
       (λ ()
-        (define (recurse-make-dirs d)
-          (define files (directory-list d))
-          (printf "Current directory: ~a\n" d)
-          (printf "Scanned files: ~a\n" files)
-          (for ([file-or-dir files])
-            (cond
-              ([directory-exists? file-or-dir]
-               (make-directory* (build-path public-dir file-or-dir))
-               (recurse-make-dirs file-or-dir))
-              ([file-exists? file-or-dir]
-               (process-file public-dir file-or-dir))
-               (else (void)))))
-        (recurse-make-dirs "content"))
-        #:depends-on 'check_content)
-               
-        
+        (fold-files
+         (λ (fpath ftype _)
+           (printf "x:~a y:~a z:~a\n" ftype fpath _)
+           (case ftype
+             ((dir)  (public-create-dir fpath))
+             ((file) (public-process-file fpath))
+             (else   (printf "Links not supported, skipping\n"))))
+         0
+         "content"))
+      #:depends-on 'check_content)
 
+     (Task:make
+      'make_static_public
+      (λ ()
+        (make-directory* (build-path "public" "static")))
+      #:depends-on 'make_public)
      ))
 
   (Taskrun 4 tasks)

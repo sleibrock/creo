@@ -28,12 +28,12 @@
   (-> (or/c path? string?) symbol?)
   (define T (File:extension f))
   (case T
-    (("md")                     'markdown)
-    (("jpg" "webp" "png" "gif") 'image)
-    (("js")                     'script)
-    (("css")                    'stylesheet)
-    (("creo")                   'config)
-    (("rkt")                    'racket)
+    (("md")    'markdown)
+    (("jpg" "webp" "png" "gif" "jpeg") 'image)
+    (("js")    'script)
+    (("css")   'stylesheet)
+    (("creo")  'config)
+    (("rkt")   'racket)
     (else 'unknown)))
       
 
