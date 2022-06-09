@@ -40,7 +40,9 @@ by scanning for appropriate connections.
                 )
   #:transparent)
 
-
+(define/contract current-config
+  (parameter/c (or/c boolean? Configuration?))
+  (make-parameter #f))
 
 (define/contract site-title
   (parameter/c string?)
@@ -63,14 +65,13 @@ by scanning for appropriate connections.
   (parameter/c boolean?)
   (make-parameter #f))
 
-
 (define/contract has-ffmpeg?
   (parameter/c boolean?)
   (make-parameter #f))
 
 (define/contract allowed-imagetypes
   (parameter/c (list/c symbol?))
-  (make-parameter '(jpgg png gif)))
+  (make-parameter '(jpg png gif)))
 
 
 (define/contract base-compression-level
@@ -123,9 +124,8 @@ by scanning for appropriate connections.
     path-to-file #:exists 'replace
     (λ (configfile)
       (parameterize ([current-output-port configfile])
-        (displayln "#lang s-exp \"languages/config.rkt\"")
-        (displayln "")
-        (displayln "; Write your configuration here")))))
+        (displayln "; Write your configuration here")
+        (displayln "; example: (site-title \"Your Title Here\")")))))
 
 
 
