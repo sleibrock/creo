@@ -34,6 +34,8 @@
     (("css")   'stylesheet)
     (("creo")  'config)
     (("rkt")   'racket)
+    (("html" "txt")  'file)
+    (("json" "toml") 'data)
     (else 'unknown)))
       
 

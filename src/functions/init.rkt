@@ -4,6 +4,7 @@
 (require (only-in racket/contract define/contract -> ->* any/c list/c or/c)
          "../collections/Task.rkt"
          "../utilities/TaskRunner.rkt"
+         "../collections/Configuration.rkt"
          )
 
 (provide CREO:init)
@@ -36,6 +37,7 @@
   ; more as required
   (define tasks
     (list
+     ; make all the basic directories
      (Task:make 'root_dir (folder-maker project-name))
      (Task:make 'templates (folder-maker project-name "templates")
                 #:depends-on 'root_dir)
@@ -44,6 +46,14 @@
      (Task:make 'styles (folder-maker project-name "styles")
                 #:depends-on 'root_dir)
      (Task:make 'static (folder-maker project-name "static")
+                #:depends-on 'root_dir)
+
+     ; generate a configuration file
+     (Task:make 'make_config
+                (λ ()
+                  (let ([config-path (build-path project-name "config.creo")])
+                    (unless (file-exists? config-path)
+                      (Config:write-default config-path))))
                 #:depends-on 'root_dir)
      ))
 
