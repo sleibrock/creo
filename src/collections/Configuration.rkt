@@ -19,7 +19,8 @@ means of auto-generating the "config.creo" file
 by scanning for appropriate connections.
 |#
 
-(require (only-in racket/contract define/contract -> parameter/c list/c)
+(require (only-in racket/contract define/contract -> parameter/c list/c or/c)
+         (only-in racket/file file->list)
          )
 
 
@@ -41,7 +42,7 @@ by scanning for appropriate connections.
   #:transparent)
 
 (define/contract current-config
-  (parameter/c (or/c boolean? Configuration?))
+  (parameter/c (or/c boolean? Config?))
   (make-parameter #f))
 
 (define/contract site-title
@@ -70,7 +71,7 @@ by scanning for appropriate connections.
   (make-parameter #f))
 
 (define/contract allowed-imagetypes
-  (parameter/c (list/c symbol?))
+  (parameter/c list?)
   (make-parameter '(jpg png gif)))
 
 
@@ -128,6 +129,15 @@ by scanning for appropriate connections.
         (displayln "; example: (site-title \"Your Title Here\")")))))
 
 
+(define-syntax-rule (content-read! expr ...)
+  (begin
+    expr ...
+    (create-config-from-params)))
+
+
+(define (Config:read-file fname)
+  (define config-code (file->list fname))
+  (eval (content-read! config-code)))
 
 
 ;; Testing section

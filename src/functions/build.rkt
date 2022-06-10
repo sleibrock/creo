@@ -5,11 +5,15 @@
          "../collections/Task.rkt"
          "../utilities/TaskRunner.rkt"
          "../utilities/FileSysTools.rkt"
+         "../collections/Configuration.rkt"
          )
 
 
 (provide CREO:build)
 
+
+(define-namespace-anchor A)
+(define ns (namespace-anchor->namespace A))
 
 (define/contract (folder-check folder)
   (-> string? (-> void?))
@@ -49,12 +53,20 @@
   ; define all tasks
   (define tasks
     (list
-     ;(Task:make 'check_config (λ () (unless (file-exists? "config.creo")
-     ;  (error "CREO:build - config.creo not found"))))
-     (Task:make 'check_content   (folder-check "content"))
-     (Task:make 'check_templates (folder-check "templates"))
-     (Task:make 'check_static    (folder-check "static"))
-     (Task:make 'check_styles    (folder-check "styles"))
+     ; check if the config file exists
+     (Task:make 'check_config
+                (λ () (unless (file-exists? "config.creo")
+                        (error "CREO:build - config.creo not found"))))
+
+     ; check for the four main folders (of the apocalypse)
+     (Task:make 'check_content   (folder-check "content")
+                #:depends-on 'check_config)
+     (Task:make 'check_templates (folder-check "templates")
+                #:depends-on 'check_config)
+     (Task:make 'check_static    (folder-check "static")
+                #:depends-on 'check_config)
+     (Task:make 'check_styles    (folder-check "styles")
+                #:depends-on 'check_config)
 
      ; make the output build directory
      (Task:make 'make_public (λ () (make-directory* public-dir))
@@ -81,6 +93,16 @@
       (λ ()
         (make-directory* (build-path "public" "static")))
       #:depends-on 'make_public)
+
+
+     (Task:make
+      'read_config
+      (λ ()
+        (parameterize ([current-namespace ns])
+          (with-handlers
+            ([exn:fail? (λ (err) (error (format "Config error: ~a" err)))])
+            (current-config (Config:read-file "config.creo")))))
+      #:depends-on 'check_config)
      ))
 
   (Taskrun 4 tasks)

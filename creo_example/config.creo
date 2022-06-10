@@ -1,0 +1,3 @@
+; Write your configuration here
+; example: (site-title "Your Title Here")
+(site-title "Creo - Web Development for the Future")
