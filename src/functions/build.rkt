@@ -12,9 +12,6 @@
 (provide CREO:build)
 
 
-(define-namespace-anchor A)
-(define ns (namespace-anchor->namespace A))
-
 (define/contract (folder-check folder)
   (-> string? (-> void?))
   (λ ()
@@ -98,11 +95,20 @@
      (Task:make
       'read_config
       (λ ()
-        (parameterize ([current-namespace ns])
+        (parameterize ([current-namespace Config:Namespace])
           (with-handlers
             ([exn:fail? (λ (err) (error (format "Config error: ~a" err)))])
-            (current-config (Config:read-file "config.creo")))))
+            (current-config (Config:read-file "config.creo"))
+
+            (displayln (current-config)))))
       #:depends-on 'check_config)
+
+
+     (Task:make
+      'build_pages
+      (λ ()
+        (displayln "Do something"))
+      #:depends-on 'read_config)
      ))
 
   (Taskrun 4 tasks)

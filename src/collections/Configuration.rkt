@@ -28,6 +28,10 @@ by scanning for appropriate connections.
          (all-defined-out)
          )
 
+(define-namespace-anchor Config:Anchor)
+(define Config:Namespace (namespace-anchor->namespace Config:Anchor))
+
+
 (struct Config (site-title
                 author-full-name
                 author-short-name
@@ -50,10 +54,12 @@ by scanning for appropriate connections.
   (make-parameter "Creo Site"))
 
 
+;; Provide your full name here (as opposed to the short name)
 (define/contract author-full-name
   (parameter/c string?)
   (make-parameter "Your Name"))
 
+;; Provide your shorter name here, or nickname, etc
 (define/contract author-short-name
   (parameter/c string?)
   (make-parameter "Your Name (but shorter"))
@@ -121,23 +127,37 @@ by scanning for appropriate connections.
 ;; The default configuration file writer when new projects are
 ;; either initialized, or attempting to auto-update settings
 (define (Config:write-default path-to-file)
+  (define parameters-list
+    `((site-title             . "Your Title here")
+      (author-full-name       . "Creo Employee #37")
+      (author-short-name      . "Employee #37")
+      (site-base-url          . "https://your-site-here.com")
+      ;(has-imagemagick?       . #f)
+      ;(has-ffmpeg?            . #f)
+      (allowed-imagetypes     . '("jpg" "png" "gif"))
+      (base-compression-level . 94)
+      (theme-folder           . "base")))
   (call-with-output-file
     path-to-file #:exists 'replace
-    (λ (configfile)
-      (parameterize ([current-output-port configfile])
+    (λ (out)
+      (parameterize ([current-output-port out])
         (displayln "; Write your configuration here")
-        (displayln "; example: (site-title \"Your Title Here\")")))))
+        (displayln "; example: (site-title \"Your Title Here\")")
+        (displayln "")
+        (for ([pair parameters-list])
+          (let ([property (car pair)]
+                [value    (cdr pair)])
+            (displayln (format "(~a ~a)" property value))))))))
 
-
-(define-syntax-rule (content-read! expr ...)
-  (begin
-    expr ...
-    (create-config-from-params)))
 
 
 (define (Config:read-file fname)
-  (define config-code (file->list fname))
-  (eval (content-read! config-code)))
+  (define config-code (cons 'begin (file->list fname)))
+  (printf "Got code: ~a\n" config-code)
+  (parameterize ([current-namespace Config:Namespace])
+    (eval config-code))
+  (displayln "Got here")
+  (create-config-from-params))
 
 
 ;; Testing section

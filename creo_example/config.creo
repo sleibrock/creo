@@ -1,3 +1,5 @@
 ; Write your configuration here
 ; example: (site-title "Your Title Here")
 (site-title "Creo - Web Development for the Future")
+(author-full-name "Creo Worker #49")
+(author-short-name "Creo #49")

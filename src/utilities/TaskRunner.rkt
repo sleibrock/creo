@@ -18,7 +18,7 @@
        (thread-send parent (list 'awaiting n 0))
        (define curtask (thread-receive)) ; wait for task
        (when (Task? curtask)
-         (with-handlers ([exn? (λ (e) (displayln e) (exit))]) 
+         (with-handlers ([exn? (λ (e) (thread-send parent (list 'err n e)))]) 
            ((Task-fn curtask))  ; block thread until task is finished
            (thread-send parent (list 'done n (Task-id curtask)))))
        (loop))
@@ -63,9 +63,9 @@
        (define (superloop Q H C)
          ;(printf "Superloop: ~a ~a ~a" Q H C)
          (when (or (Queue:not-empty? Q) (< 0 C))
-           (define-values (msg thread# taskid)
+           (define-values (msg thread# taskid-or-err)
              (apply values (thread-receive)))
-           (printf "Received message: ~a ~a ~a\n" msg thread# taskid)
+           (printf "Received message: ~a ~a ~a\n" msg thread# taskid-or-err)
            (case msg
              ((awaiting)
               (if (Queue:not-empty? Q)
@@ -74,16 +74,16 @@
                     (superloop (Queue:tail Q) H (add1 C)))
                   (superloop Q H C)))
              ((done)
-                (if (hash-has-key? H taskid)
-                    (superloop (Queue:append Q (hash-ref H taskid))
-                               (Hash:update H taskid (Queue:empty))
+                (if (hash-has-key? H taskid-or-err)
+                    (superloop (Queue:append Q (hash-ref H taskid-or-err))
+                               (Hash:update H taskid-or-err (Queue:empty))
                                (sub1 C))
                     (superloop Q H (sub1 C))))
              ((fail)
-              (error "ERROR: system failure, check messages")
+              (error (format "ERROR! Thread failed with ~a" 0))
               (superloop Q H (sub1 C)))
              (else
-              (error "ERROR: incorrect message type")))))
+              (error "ERROR! Incorrect message type")))))
        (superloop task-queue dependents-hash 0))))
 
   ; let the workers run free
