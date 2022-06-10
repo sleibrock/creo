@@ -18,7 +18,7 @@
        (thread-send parent (list 'awaiting n 0))
        (define curtask (thread-receive)) ; wait for task
        (when (Task? curtask)
-         (with-handlers ([exn? (λ (e) (thread-send parent (list 'err n e)))]) 
+         (with-handlers ([exn? (λ (e) (thread-send parent (list 'fail n e)))]) 
            ((Task-fn curtask))  ; block thread until task is finished
            (thread-send parent (list 'done n (Task-id curtask)))))
        (loop))

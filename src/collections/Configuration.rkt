@@ -19,7 +19,8 @@ means of auto-generating the "config.creo" file
 by scanning for appropriate connections.
 |#
 
-(require (only-in racket/contract define/contract -> parameter/c list/c or/c)
+(require (only-in racket/contract define/contract -> parameter/c
+                  list/c or/c and/c)
          (only-in racket/file file->list)
          )
 
@@ -42,6 +43,7 @@ by scanning for appropriate connections.
                 base-compression-level
                 theme-folder
                 production?
+                output-directory
                 )
   #:transparent)
 
@@ -106,11 +108,18 @@ by scanning for appropriate connections.
   (make-parameter #f))
 
 
+;; Name of the directory you wish to output files to
+;; Can be "public" or "docs" or whatever you need
+(define/contract output-directory
+  (parameter/c string?)
+  (make-parameter "public"))
+
 
 ;; Create a configuration struct from all parameters available
 ;; NOTE: If you add more fields to the config, remember to append it
 ;; to here AND to the file writer
-(define (create-config-from-params)
+(define/contract (create-config-from-params)
+  (-> Config?)
   (Config (site-title)
           (author-full-name)
           (author-short-name)
@@ -121,12 +130,14 @@ by scanning for appropriate connections.
           (base-compression-level)
           (theme-folder)
           (production?)
+          (output-directory)
           ))
 
 
 ;; The default configuration file writer when new projects are
 ;; either initialized, or attempting to auto-update settings
 (define (Config:write-default path-to-file)
+  (-> (or/c string? path?) void?)
   (define parameters-list
     `((site-title             . "Your Title here")
       (author-full-name       . "Creo Employee #37")
@@ -151,7 +162,9 @@ by scanning for appropriate connections.
 
 
 
-(define (Config:read-file fname)
+;; Read a configuration file and return the Config struc
+(define/contract (Config:read-file fname)
+  (-> (and/c (or/c path? string?) file-exists?) Config?)
   (define config-code (cons 'begin (file->list fname)))
   (printf "Got code: ~a\n" config-code)
   (parameterize ([current-namespace Config:Namespace])
