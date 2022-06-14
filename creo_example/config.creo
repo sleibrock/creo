@@ -1,5 +1,10 @@
 ; Write your configuration here
 ; example: (site-title "Your Title Here")
-(site-title "Creo - Web Development for the Future")
-(author-full-name "Creo Worker #49")
-(author-short-name "Creo #49")
+
+(site-title Your Title here)
+(author-full-name Creo Employee #37)
+(author-short-name Employee #37)
+(site-base-url https://your-site-here.com)
+(allowed-imagetypes (quote (jpg png gif)))
+(base-compression-level 94)
+(theme-folder base)

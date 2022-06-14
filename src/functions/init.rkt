@@ -39,14 +39,44 @@
     (list
      ; make all the basic directories
      (Task:make 'root_dir (folder-maker project-name))
-     (Task:make 'templates (folder-maker project-name "templates")
-                #:depends-on 'root_dir)
      (Task:make 'content (folder-maker project-name "content")
-                #:depends-on 'root_dir)
-     (Task:make 'styles (folder-maker project-name "styles")
                 #:depends-on 'root_dir)
      (Task:make 'static (folder-maker project-name "static")
                 #:depends-on 'root_dir)
+
+     ;; make the default themes folder and include default data
+     (Task:make 'themes (folder-maker project-name "themes")
+                #:depends-on 'root_dir)
+     (Task:make 'base_theme (folder-maker project-name "themes" "base")
+                #:depends-on 'themes)
+     (Task:make 'styles (folder-maker project-name "themes" "base" "css")
+                #:depends-on 'base_theme)
+     (Task:make 'templates (folder-maker project-name "themes" "base" "templates")
+                #:depends-on 'base_theme)
+     (Task:make
+      'write_default_css
+      (λ ()
+        (displayln "Writing default CSS file"))
+      #:depends-on 'styles)
+     (Task:make
+      'write_default_template
+      (λ ()
+        (displayln "Writing default Template file"))
+      #:depends-on 'templates)
+
+     ; default index file
+     (Task:make
+      'write_default_index
+      (λ ()
+        (call-with-output-file
+          (build-path project-name "content" "index.md")
+          #:exists 'replace
+          (λ (out)
+            (parameterize ([current-output-port out])
+              (displayln "# Welcome to Creo")
+              )
+        (displayln "Writing default index file"))
+      #:depends-on 'content)
 
      ; generate a configuration file
      (Task:make 'make_config
