@@ -10,6 +10,59 @@
 (provide CREO:init)
 
 
+
+(define DEFAULT-INDEX-TEXT "
+# Welcome to Creo
+
+This is your default index.md file. Edit this to change your root index page.
+
+This is a sample of content that Creo can render.
+
+* Hello!
+* This is a list!
+
+## This is a sub-header
+### Another subheader
+#### A third one
+
+Thank you for choosing Creo.
+")
+
+(define DEFAULT-CSS "
+body{
+  margin:40px auto;
+  max-width:650px;
+  line-height:1.6;
+  font-size:18px;
+  color:#444;
+  background-color: #f3f3f3;
+  padding:0 10px;
+}
+
+h1,h2,h3 {
+  line-height:1.2;
+}
+")
+
+
+;; Text to write to the default template file
+(define DEFAULT-TEMPLATE "
+(λ (doc tmpl)
+  `(html
+    (head
+     (title ,(Document-title doc))
+     (meta ([charset \"utf-8\"])))
+    (body
+     (div
+      (article
+       (section
+        ,@(Document-contents doc))))
+     (div
+      (footer
+       \"Creo 2022\")))))
+")
+
+
 ;; Provide a general wrapper for creating folders or erroring if they are made
 (define (folder-maker . paths)
   (->* () #:rest (list/c (or/c path? string?)) (-> any/c void?))
@@ -32,7 +85,6 @@
 
   ; takes first value of args list - discard rest
   (define project-name (car args))
-
 
   ; more as required
   (define tasks
@@ -68,14 +120,14 @@
      (Task:make
       'write_default_index
       (λ ()
+        (displayln "Writing Index file")
         (call-with-output-file
           (build-path project-name "content" "index.md")
           #:exists 'replace
           (λ (out)
             (parameterize ([current-output-port out])
-              (displayln "# Welcome to Creo")
-              )
-        (displayln "Writing default index file"))
+              (displayln DEFAULT-INDEX-TEXT))))
+        (displayln "Done writing index"))
       #:depends-on 'content)
 
      ; generate a configuration file

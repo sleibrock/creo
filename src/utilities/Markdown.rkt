@@ -11,10 +11,6 @@
          )
 
 
-;; Represent a fully parsed document containing some metadata
-(struct Document (title description date contents toc)
-  #:transparent)
-
 ;; Uses some string check logic to convert a raw string
 ;; into a markdown type cell
 ;;
