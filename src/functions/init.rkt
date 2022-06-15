@@ -105,11 +105,15 @@ h1,h2,h3 {
                 #:depends-on 'base_theme)
      (Task:make 'templates (folder-maker project-name "themes" "base" "templates")
                 #:depends-on 'base_theme)
+
+     ; make the default css file
      (Task:make
       'write_default_css
       (λ ()
         (displayln "Writing default CSS file"))
       #:depends-on 'styles)
+
+     ; Make the default template file
      (Task:make
       'write_default_template
       (λ ()
@@ -130,13 +134,29 @@ h1,h2,h3 {
         (displayln "Done writing index"))
       #:depends-on 'content)
 
+
+     ; default css file
+     (Task:make
+      'write_default_css
+      (λ ()
+        (displayln "")
+        (call-with-output-file
+          (build-path project-name "themes" "base" "css" "default.css")
+          #:exists 'replace
+          (λ (out)
+            (parameterize ([current-output-port out])
+              (displayln DEFAULT-CSS))))
+        (displayln ""))
+        #:depends-on 'styles)
+
      ; generate a configuration file
-     (Task:make 'make_config
-                (λ ()
-                  (let ([config-path (build-path project-name "config.creo")])
-                    (unless (file-exists? config-path)
-                      (Config:write-default config-path))))
-                #:depends-on 'root_dir)
+     (Task:make
+      'make_config
+      (λ ()
+        (let ([config-path (build-path project-name "config.creo")])
+          (unless (file-exists? config-path)
+            (Config:write-default config-path))))
+      #:depends-on 'root_dir)
      ))
 
   (Taskrun 4 tasks)
