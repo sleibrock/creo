@@ -1,5 +1,13 @@
 #lang racket/base
 
+#|
+Markdown parsing and evaluation
+
+File should contain
+
+|#
+
+
 (require (only-in racket/contract -> define/contract and/c or/c)
          (only-in racket/string string-trim string-replace string-prefix?)
          (only-in "Macros.rkt" String:sub)
@@ -26,13 +34,14 @@
     [(regexp #rx"\\[(.*)\\]:\\[(.*)\\](.*)" (list _ anc lnk etc))
      `(link-add (,anc ,lnk))]
     [(regexp #rx"@\\((.*)\\).*?" (list _ action)) `(eval ,action)]
-    [(regexp #rx"#####(.*)" (list _ d)) `(h5 ,(string-trim d))]
-    [(regexp #rx"####(.*)"  (list _ d)) `(h4 ,(string-trim d))]
-    [(regexp #rx"###(.*)"   (list _ d)) `(h3 ,(string-trim d))]
-    [(regexp #rx"##(.*)"    (list _ d)) `(h2 ,(string-trim d))]
-    [(regexp #rx"#(.*)"     (list _ d)) `(h1 ,(string-trim d))]
-    [(regexp #rx"\\*(.*)"   (list _ d)) `(ul ,(string-trim d))]
+    [(regexp #rx"#####(.*)" (list _ d))      `(h5 ,(string-trim d))]
+    [(regexp #rx"####(.*)"  (list _ d))      `(h4 ,(string-trim d))]
+    [(regexp #rx"###(.*)"   (list _ d))      `(h3 ,(string-trim d))]
+    [(regexp #rx"##(.*)"    (list _ d))      `(h2 ,(string-trim d))]
+    [(regexp #rx"#(.*)"     (list _ d))      `(h1 ,(string-trim d))]
+    [(regexp #rx"\\*(.*)"   (list _ d))      `(ul ,(string-trim d))]
     [(regexp #rx"[0-9]*?\\.(.*)" (list _ d)) `(ol ,(string-trim d))]
+    ["```" `(code)]
     ["---" `(hr)]
     [""    `(br)]
     [_     `(p ,T)]))
