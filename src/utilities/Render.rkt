@@ -48,6 +48,20 @@ and access to change contents and macro into more HTML.
             "General page description"))
 
 
+;; two shortcut functions to help convert list items
+(define (convert-list-cell p)
+  (cons 'li (cdr p)))
+
+(define (convert-list-cells ps)
+  (map convert-list-cell ps))
+
+
+;; A helper function to strip and un-head-ify incoming
+;; items for a code block
+(define (append-code-cell cellcc p)
+  0)
+
+
 
 ;; The second pass markdown parsing builder.
 ;; This looks at elements attributes and organizes them into the appropriate locations
@@ -85,13 +99,18 @@ and access to change contents and macro into more HTML.
           (error "Item is not a list, invalid structure"))
         (let ([elem (car item)])
           (case elem
+            ((ol)  (markdown-builder (cdr to-parse) finalcc
+                                     #:groupcc (cons item groupcc)
+                                     #:list? 'ol))
+            ((ul)  (markdown-builder (cdr to-parse) finalcc
+                                     #:groupcc (cons item groupcc)
+                                     #:list? 'ul))
             (else
              (markdown-builder (cdr to-parse)
                                (cons item finalcc))))))))
          
 
-  (define TESTRAW "
-# Hello world!
+(define TESTRAW "# Hello world!
 
 I'm a test paragraph!
 
@@ -101,8 +120,7 @@ I'm a test paragraph!
 
 ---
 
-Goodbye paragraph
-")
+Goodbye paragraph")
 
 (module+ main
   (displayln "Testing render")
