@@ -58,6 +58,20 @@ and access to change contents and macro into more HTML.
 (define (append-code-cell cellcc p)
   0)
 
+;; Continusouly pop a list until the front of the list is no longer
+;; a linebreak
+(define (strip-newlines contents)
+  (if (empty? contents)
+      '()
+      (let ([head (car contents)])
+        (if (empty? head)
+            (strip-newlines (cdr contents))
+            (let ([key (car head)])
+              (case key
+                ((br) (strip-newlines (cdr contents)))
+                (else contents)))))))
+  
+
 
 
 ;; The second pass markdown parsing builder.
@@ -159,6 +173,15 @@ Goodbye paragraph")
 (module+ test
   (require rackunit)
 
+
+  ;; test removing the head of a list if it's empty or a <br> line
+  (test-case "Testing whether removing front of the list if empty"
+    (check-equal? (strip-newlines '(() () (br)))
+                  '())
+    (check-equal? (strip-newlines '(() (br) (p "Hi")))
+                  '((p "Hi")))
+    (check-equal? (strip-newlines '(() () (br) () () (br) (p "hi")))
+                  '((p "hi"))))
   
   ;; Now we have the impossible goal of testing a full blown markdown
   ;; parsing system
