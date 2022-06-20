@@ -38,7 +38,7 @@ and access to change contents and macro into more HTML.
   (define output (markdown-builder markdown-cells '()))
   
   (Document "title"
-            output
+            (strip-front-newlines output)
             "2022-10-31"
             "General page description"))
 
@@ -60,15 +60,15 @@ and access to change contents and macro into more HTML.
 
 ;; Continusouly pop a list until the front of the list is no longer
 ;; a linebreak
-(define (strip-newlines contents)
+(define (strip-front-newlines contents)
   (if (empty? contents)
       '()
       (let ([head (car contents)])
         (if (empty? head)
-            (strip-newlines (cdr contents))
+            (strip-front-newlines (cdr contents))
             (let ([key (car head)])
               (case key
-                ((br) (strip-newlines (cdr contents)))
+                ((br) (strip-front-newlines (cdr contents)))
                 (else contents)))))))
   
 
@@ -100,7 +100,7 @@ and access to change contents and macro into more HTML.
       (cond
         (is-code?  {error "Unmatched code sequence!!"})
         ((not (eqv? #f is-list?))
-         (markdown-builder to-parse
+         (markdown-builder '()
                            (cons (cons is-list? (convert-list-cells groupcc))
                                  finalcc)))
         (else
