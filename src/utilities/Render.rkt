@@ -34,12 +34,7 @@ and access to change contents and macro into more HTML.
   ; convert lines to markdown lines
   (define markdown-cells (map string->markdown-cell doc-lines))
 
-  (displayln "Rendering markdown actions")
-  (parameterize ([current-namespace Render:Namespace])
-    (for ([action (filter is-action? markdown-cells)])
-      (displayln action)))
-  (displayln "Done")
-
+  ; Use the markdown builder tool to properly execute cells
   (define output (markdown-builder markdown-cells '()))
   
   (Document "title"
@@ -52,12 +47,14 @@ and access to change contents and macro into more HTML.
 (define (convert-list-cell p)
   (cons 'li (cdr p)))
 
+;; List cells are often contained backwards, so this applies reverse $ map f lst
 (define (convert-list-cells ps)
-  (map convert-list-cell ps))
+  (reverse (map convert-list-cell ps)))
 
 
 ;; A helper function to strip and un-head-ify incoming
 ;; items for a code block
+;; TODO: might require a Queue to keep in order
 (define (append-code-cell cellcc p)
   0)
 
@@ -81,7 +78,6 @@ and access to change contents and macro into more HTML.
 ;;  |-> and append it all in one big `(code x0 x1 ...) block
 ;;  --> if we reach the end of file, do the same thing
 ;;    > (lack of existence = end block at EOF)
-
 (define (markdown-builder to-parse finalcc
                           #:groupcc  [groupcc '()]
                           #:is-code? [is-code? #f]
@@ -91,7 +87,8 @@ and access to change contents and macro into more HTML.
         (is-code?  {error "Unmatched code sequence!!"})
         ((not (eqv? #f is-list?))
          (markdown-builder to-parse
-                           (cons (cons is-list? (reverse groupcc)) finalcc)))
+                           (cons (cons is-list? (convert-list-cells groupcc))
+                                 finalcc)))
         (else
          (reverse finalcc)))
       (let ([item (car to-parse)])
@@ -99,24 +96,46 @@ and access to change contents and macro into more HTML.
           (error "Item is not a list, invalid structure"))
         (let ([elem (car item)])
           (case elem
-            ((ol)  (markdown-builder (cdr to-parse) finalcc
+            ('ol  (markdown-builder (cdr to-parse) finalcc
                                      #:groupcc (cons item groupcc)
                                      #:list? 'ol))
-            ((ul)  (markdown-builder (cdr to-parse) finalcc
+            ('ul  (markdown-builder (cdr to-parse) finalcc
                                      #:groupcc (cons item groupcc)
                                      #:list? 'ul))
+            ('code (if is-code?
+                        (markdown-builder (cdr to-parse) (cons `(code ,groupcc) finalcc)) 
+                        (markdown-builder (cdr to-parse) finalcc #:is-code? #t)))
             (else
-             (markdown-builder (cdr to-parse)
-                               (cons item finalcc))))))))
-         
+             (cond
+               (is-code?
+                (markdown-builder (cdr to-parse) finalcc
+                                  #:groupcc (cons item groupcc)
+                                  #:is-code? #t))
+               ((not (eqv? #f is-list?))
+                (markdown-builder (cdr to-parse)
+                                  (cons (cons is-list? (convert-list-cells groupcc))
+                                        finalcc)))
+               (else
+                (markdown-builder (cdr to-parse)
+                                  (cons item finalcc))))))))))
+      
 
-(define TESTRAW "# Hello world!
+(define TESTRAW "
+@(title \"This is a post brah\")
+
+# Hello world!
 
 I'm a test paragraph!
 
 * This is a list item
 * item 2
 * item 3
+
+
+```
+this text is inside a block of code
+same as this line
+```
 
 ---
 
