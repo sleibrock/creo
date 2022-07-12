@@ -145,7 +145,6 @@ I'm a test paragraph!
 * item 2
 * item 3
 
-
 ```
 this text is inside a block of code
 same as this line
@@ -176,11 +175,11 @@ Goodbye paragraph")
 
   ;; test removing the head of a list if it's empty or a <br> line
   (test-case "Testing whether removing front of the list if empty"
-    (check-equal? (strip-newlines '(() () (br)))
+    (check-equal? (strip-front-newlines '(() () (br)))
                   '())
-    (check-equal? (strip-newlines '(() (br) (p "Hi")))
+    (check-equal? (strip-front-newlines '(() (br) (p "Hi")))
                   '((p "Hi")))
-    (check-equal? (strip-newlines '(() () (br) () () (br) (p "hi")))
+    (check-equal? (strip-front-newlines '(() () (br) () () (br) (p "hi")))
                   '((p "hi"))))
   
   ;; Now we have the impossible goal of testing a full blown markdown

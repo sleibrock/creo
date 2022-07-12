@@ -32,6 +32,7 @@
         (void)
         (make-directory* new-path))))
 
+
 (define (public-process-file target)
   (let ([new-path [replace-content-with-public target]])
     (define type (File:type target))
@@ -39,6 +40,7 @@
       ((markdown) (displayln "Got a markdown file!"))
       ((image)    (displayln "Got an image file!"))
       (else (displayln "Got something else...")))))
+
 
 (define/contract (CREO:build args)
   (-> list? void?)

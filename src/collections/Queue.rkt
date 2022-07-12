@@ -143,9 +143,9 @@
     (define q1 (Queue:init '(1 2 3 4 5)))
     (define q2 (Queue:init '(6 7 8 9 10)))
     (define q3 (Queue:append q1 q2))
-    (check-eqv? '(1 2 3 4 5 6 7 8 9 10)
+    (check-equal? '(1 2 3 4 5 6 7 8 9 10)
                (Queue->list q3)))
 
-  (displayln "Queue.rkt: Tests complete"))
+  )
 
 ; end Queue.rkt

@@ -40,7 +40,8 @@ File should contain
     [(regexp #rx"##(.*)"    (list _ d))      `(h2 ,(string-trim d))]
     [(regexp #rx"#(.*)"     (list _ d))      `(h1 ,(string-trim d))]
     [(regexp #rx"\\*(.*)"   (list _ d))      `(ul ,(string-trim d))]
-    [(regexp #rx"[0-9]*?\\.(.*)" (list _ d)) `(ol ,(string-trim d))]
+    [(regexp #rx"([0-9]*)\\.(.*)" (list _ num d))
+     `(ol ([value ,num]) ,(string-trim d))]
     ["```" `(code)]
     ["---" `(hr)]
     [""    `(br)]
@@ -65,7 +66,7 @@ File should contain
     (check-equal? (string->markdown-cell "I'm a paragraph!")
                   '(p "I'm a paragraph!"))
     (check-equal? (string->markdown-cell "33. Hello!")
-                  '(ol "Hello!"))
+                  '(ol ([value "33"]) "Hello!"))
     (check-equal? (string->markdown-cell "* I'm a cell!")
                   '(ul "I'm a cell!"))
     (check-equal? (string->markdown-cell "@(image https://google.com)")

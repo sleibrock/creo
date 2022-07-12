@@ -20,19 +20,20 @@
 
 
 ;; Partition a list into two lists based on a filter predicate
-;; Do not trust racket's partition function naturally since
-;; it might do double-iteration (two filter calls instead of one pass)
+;; optionally, use the standard `partition` function in racket/list
 (define/contract (List:partition L f)
   (-> list? (-> any/c boolean?) (values list? list?))
   (define (inner LL leftcc rightcc)
     (if (empty? LL)
-        (values (reverse leftcc)
-                (reverse rightcc))
-        (let ([head (car LL)])
+        (cons (reverse leftcc)
+              (reverse rightcc))
+        (let ([head (car LL)]
+              [tail (cdr LL)])
           (if (f head)
-              (inner (cdr LL) (cons head leftcc) rightcc)
-              (inner (cdr LL) leftcc (cons head rightcc))))))
-  (inner L '() '()))
+              (inner tail (cons head leftcc) rightcc)
+              (inner tail leftcc (cons head rightcc))))))
+  (let ([result (inner L '() '())])
+    (values (car result) (cdr result))))
 
 
 
@@ -41,11 +42,6 @@
   (require rackunit
            "Macros.rkt"
            )
-
-  (test-case "Test whether partition splits a list into two lists"
-    (time-it (List:partition (range 1000) even?))
-    (time-it (partition (range 1000) even?))
-    )
   )
 
 ; end GenPurpose.rkt
